@@ -7,20 +7,33 @@ from rq import Worker, Queue, Connection
 from methods.connection import get_redis, get_cursor
 
 
-def get_tmp_table(type=None, col=None, value=None):
+def get_tmp_table(name, type, col=False, value=False):
     """Returns table info from databse"""
     cursor, _ = get_cursor()
-    q = '''SELECT * FROM channels '''
+    if not cursor:
+        # log that failed getting cursor
+        return False
+    if "tmp" not in name:
+        # log that name was wrong
+        return False
+    q = f'''SELECT * FROM {name} '''
     if type is not None:
         value = value.replace(";", "")
         value = value.replace("'", "''")
-        if type == "WHERE":
-            value
+        if type == "WHERE" and col and value:
             q += f'''WHERE {col} = "{value}"'''
+        elif type == "*":
+            pass
+        elif type == "data":
+            q = f'''SELECT data FROM {name} '''
+        else:
+            return False
     try:
         cursor.execute(q)
     except MySQLdb.Error as error:
         print(error)
+        # Log
+        return False
         # sys.exit("Error:Failed getting new channels from database")
     data = cursor.fetchall()
     cursor.close()
