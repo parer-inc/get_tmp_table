@@ -17,16 +17,17 @@ def get_tmp_table(name, type, col=False, value=False):
     if "tmp" not in name:
         # log that name was wrong
         return False
-    q = f'''SELECT * FROM {name} '''
+    q = f'''SELECT * FROM `{name}` '''
     if type is not None:
-        value = value.replace(";", "")
-        value = value.replace("'", "''")
+        if value:
+            value = value.replace(";", "")
+            value = value.replace("'", "''")
         if type == "WHERE" and col and value:
             q += f'''WHERE {col} = "{value}"'''
         elif type == "*":
             pass
         elif type == "data":
-            q = f'''SELECT data FROM {name} '''
+            q = f'''SELECT data FROM `{name}` '''
         else:
             return False
     try:
